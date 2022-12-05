@@ -1,15 +1,5 @@
 with open('input.txt', 'r') as f:
-    stack1 = []
-    stack2 = []
-    stack3 = []
-    stack4 = []
-    stack5 = []
-    stack6 = []
-    stack7 = []
-    stack8 = []
-    stack9 = []
-    stacks = [stack1, stack2, stack3, stack4,
-              stack5, stack6, stack7, stack8, stack9]
+    stacks = [[] for _ in range(9)]
     count = 0
     temp = ""
     for line in f:
@@ -31,7 +21,7 @@ with open('input.txt', 'r') as f:
                         temp.append(j)
                 temp = temp[::-1]
                 stacks[i] = temp
-                print(temp)
+                # print(temp)
             count += 1
         elif count >= 9:
             if "move" in line:
