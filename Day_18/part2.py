@@ -36,8 +36,8 @@ while True:
                    ymin[1] - 1 <= y <= ymax[1] + 1 and \
                    zmin[2] - 1 <= z <= zmax[2] + 1:
                     inside.add(neighbor)
-    temp = [cube in outside for cube in inside]
-    if all(temp):
+
+    if all([cube in outside for cube in inside]):
         break
     outside |= inside
 
