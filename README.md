@@ -9,4 +9,4 @@ There are no optimizations or cleaning up.
 This are the codes i wrote when i woke up at 7 AM to solve them.
 
 
-Days 17, 23, 24, 25 all done in 25th of December because i was bored.
+Days 17(part 2), 23, 24, 25 all done in 25th of December because i was bored.
