@@ -1,6 +1,3 @@
-from functools import lru_cache
-
-
 class Piece:
     def __init__(self, rock: str, height: int) -> None:
         self.rock = rock

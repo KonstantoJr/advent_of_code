@@ -1,4 +1,4 @@
-from functools import lru_cache
+import math
 
 
 class Piece:
@@ -62,6 +62,9 @@ class Board:
         self.movement_index = 0
         self.movement = movement
         self.points = set()
+        self.lastNRocks = []
+        self.seenStates = dict()
+        self.cycle = False
 
     def addPiece(self, rock: str) -> None:
         self.stack.append(Piece(rock, self.height))
@@ -69,7 +72,38 @@ class Board:
 
     def simulation(self) -> None:
         while self.total_rocks < 1_000_000_000_000:
-            print(f'Rock: {self.total_rocks} out of 1_000_000_000_000')
+            if not self.cycle:
+                self.lastNRocks = list(map(
+                    lambda rock: frozenset(
+                        [(x, y - self.height) for x, y in rock.findPoints()]),
+                    self.stack[-40:]))
+
+                startState = frozenset([
+                    self.movement_index,
+                    self.rock_index,
+                    frozenset(self.lastNRocks)
+                ])
+                if startState in self.seenStates:
+                    self.cycle = True
+                    r0, height0 = self.seenStates[startState]
+
+                    cycle_length = self.total_rocks - r0
+                    height_per_cycle = self.height - height0
+                    remaining_rocks = 1_000_000_000_000 - r0
+                    num_cycles = math.floor(remaining_rocks / cycle_length)
+
+                    self.total_rocks = r0 + num_cycles * cycle_length
+                    self.height = height0 + num_cycles * height_per_cycle
+
+                    for rock in self.lastNRocks:
+                        for x, y in rock:
+                            self.points.add((x, y + self.height))
+                else:
+                    self.seenStates[startState] = (
+                        self.total_rocks, self.height)
+
+            print(
+                f'Rock: {self.total_rocks} out of 1_000_000_000_000 {self.cycle}')
             self.addPiece(self.rocks[self.rock_index])
             if self.rock_index == 0 and self.movement_index == 0 and self.height != 0:
                 break
