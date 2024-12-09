@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"sort"
 	"strconv"
 )
 
@@ -99,7 +98,7 @@ func createDiskSpace(diskMap string) []DiskSpace {
 			diskSpace = append(diskSpace, DiskSpace{0, num - 1, 0, num})
 		} else if i%2 == 0 {
 			id := i / 2
-			diskSpace = append(diskSpace, DiskSpace{diskSpace[len(diskSpace)-1].end + 1, diskSpace[len(diskSpace)-1].end + num - 1, id, num})
+			diskSpace = append(diskSpace, DiskSpace{diskSpace[len(diskSpace)-1].end + 1, diskSpace[len(diskSpace)-1].end + num, id, num})
 		} else {
 			diskSpace = append(diskSpace, DiskSpace{diskSpace[len(diskSpace)-1].end + 1, diskSpace[len(diskSpace)-1].end + num, -1, num})
 		}
@@ -111,22 +110,40 @@ func moveFiles(diskSpace []DiskSpace) []DiskSpace {
 	newDisk := make([]DiskSpace, len(diskSpace))
 	copy(newDisk, diskSpace)
 	for file := len(diskSpace) - 1; file >= 0; file-- {
-		fmt.Println(diskSpace[file])
 		if diskSpace[file].id != -1 {
 			for empty := 0; empty < len(newDisk); empty++ {
+				if newDisk[empty].id == diskSpace[file].id {
+					break
+				}
+				// fmt.Println(diskSpace[file], newDisk[empty])
 				if newDisk[empty].id == -1 && newDisk[empty].size == diskSpace[file].size {
 					newDisk[empty].id = diskSpace[file].id
-					// diskSpace[file].id = -1
+					for i := len(newDisk) - 1; i >= 0; i-- {
+						if newDisk[i].id == diskSpace[file].id {
+							newDisk[i].id = -1
+							break
+						}
+					}
 					break
 				}
 				if newDisk[empty].id == -1 && newDisk[empty].size > diskSpace[file].size {
+					for i := len(newDisk) - 1; i >= 0; i-- {
+						if newDisk[i].id == diskSpace[file].id {
+							newDisk[i].id = -1
+							break
+						}
+					}
 					newDisk[empty].size -= diskSpace[file].size
 					newDisk = append(newDisk, DiskSpace{
-						newDisk[empty].start,
-						newDisk[empty].start + diskSpace[file].size,
-						diskSpace[file].id,
-						diskSpace[file].size,
+						start: newDisk[empty].start,
+						end:   newDisk[empty].start + diskSpace[file].size - 1,
+						id:    int(diskSpace[file].id),
+						size:  diskSpace[file].size,
 					})
+					newDisk[empty].start = newDisk[empty].start + diskSpace[file].size
+					newDisk[empty].end = newDisk[empty].start + newDisk[empty].size - 1
+
+					break
 				}
 
 			}
@@ -147,26 +164,6 @@ func checksumCalculationDiskSpace(diskSpace []DiskSpace) int {
 	return checksum
 }
 
-func printDiskSpace(diskSpace []DiskSpace) {
-	deepCopy := make([]DiskSpace, len(diskSpace))
-	copy(deepCopy, diskSpace)
-	sort.Slice(deepCopy, func(i, j int) bool {
-		return deepCopy[i].start < deepCopy[j].start
-	})
-	std := ""
-	for _, disk := range deepCopy {
-		fmt.Println(disk)
-		for i := 0; i < disk.size; i++ {
-			if disk.id == -1 {
-				std += "."
-			} else {
-				std += strconv.Itoa(disk.id)
-			}
-		}
-	}
-	fmt.Println(std)
-}
-
 func part1(diskMap string) int64 {
 	expanded := expandDiskMap(diskMap)
 	compressed := moveBlocks(expanded)
@@ -176,15 +173,13 @@ func part1(diskMap string) int64 {
 
 func part2(diskMap string) int {
 	diskSpace := createDiskSpace(diskMap)
-	printDiskSpace(diskSpace)
 	newDisk := moveFiles(diskSpace)
-	printDiskSpace(newDisk)
 	checksum := checksumCalculationDiskSpace(newDisk)
 	return checksum
 }
 
 func main() {
-	input := readFile("test.txt")
+	input := readFile("input.txt")
 	fmt.Println(part1(input))
 	fmt.Println(part2(input))
 
