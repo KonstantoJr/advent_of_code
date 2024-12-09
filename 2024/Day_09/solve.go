@@ -111,20 +111,24 @@ func moveFiles(diskSpace []DiskSpace) []DiskSpace {
 	newDisk := make([]DiskSpace, len(diskSpace))
 	copy(newDisk, diskSpace)
 	for file := len(diskSpace) - 1; file >= 0; file-- {
+		fmt.Println(diskSpace[file])
 		if diskSpace[file].id != -1 {
 			for empty := 0; empty < len(newDisk); empty++ {
-				if newDisk[empty].id == -1 && newDisk[empty].size >= diskSpace[file].size {
+				if newDisk[empty].id == -1 && newDisk[empty].size == diskSpace[file].size {
+					newDisk[empty].id = diskSpace[file].id
+					// diskSpace[file].id = -1
+					break
+				}
+				if newDisk[empty].id == -1 && newDisk[empty].size > diskSpace[file].size {
+					newDisk[empty].size -= diskSpace[file].size
 					newDisk = append(newDisk, DiskSpace{
 						newDisk[empty].start,
-						newDisk[empty].start + diskSpace[file].size - 1,
+						newDisk[empty].start + diskSpace[file].size,
 						diskSpace[file].id,
 						diskSpace[file].size,
 					})
-					newDisk[file].id = -1
-					newDisk[empty].start += diskSpace[file].size
-					newDisk[empty].size -= diskSpace[file].size
-					break
 				}
+
 			}
 		}
 	}
