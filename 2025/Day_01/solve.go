@@ -61,10 +61,38 @@ func part1(instructions []Instruction) {
 }
 
 func part2(instructions []Instruction) {
+	pos := int64(50)
+	ans := int64(0)
+
+	for _, instr := range instructions {
+		switch instr.Command {
+		case "L":
+			full_turns := instr.Value / 100
+			ans += full_turns
+			clockwise := instr.Value % 100
+			new_pos := (pos - clockwise + 100) % 100
+			if new_pos > pos {
+				ans += 1
+			}
+			pos = new_pos
+		case "R":
+			full_turns := instr.Value / 100
+			ans += full_turns
+			clockwise := instr.Value % 100
+			new_pos := (pos + clockwise) % 100
+			if new_pos < pos {
+				ans += 1
+			}
+			pos = new_pos
+		}
+		println(pos)
+	}
+	fmt.Println("Part 2 Answer:", ans)
+
 }
 
 func main() {
-	instructions, err := readInputFile("input.txt")
+	instructions, err := readInputFile("test.txt")
 	if err != nil {
 		fmt.Println("Error reading input file:", err)
 		return
