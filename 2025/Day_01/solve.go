@@ -16,6 +16,12 @@ type Instruction struct {
 	Value   int64
 }
 
+type Node struct {
+	Pos      int64
+	Next     *Node
+	Previous *Node
+}
+
 func readInputFile(filePath string) ([]Instruction, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
@@ -60,39 +66,65 @@ func part1(instructions []Instruction) {
 
 }
 
+func createCircularDoublyLinkedList(size int64) *Node {
+	var head *Node
+	var tail *Node
+
+	for i := int64(0); i < size; i++ {
+		newNode := &Node{Pos: i}
+		if head == nil {
+			head = newNode
+			tail = newNode
+			newNode.Next = newNode
+			newNode.Previous = newNode
+		} else {
+			newNode.Previous = tail
+			newNode.Next = head
+			tail.Next = newNode
+			head.Previous = newNode
+			tail = newNode
+		}
+	}
+	return head
+}
+
 func part2(instructions []Instruction) {
-	pos := int64(50)
+	list := createCircularDoublyLinkedList(100)
+	for i := int64(0); i < 50; i++ {
+		list = list.Next
+	}
+	current := list
 	ans := int64(0)
 
 	for _, instr := range instructions {
 		switch instr.Command {
 		case "L":
-			full_turns := instr.Value / 100
-			ans += full_turns
-			clockwise := instr.Value % 100
-			new_pos := (pos - clockwise + 100) % 100
-			if new_pos > pos {
-				ans += 1
+			for i := int64(0); i < instr.Value; i++ {
+				current = current.Previous
+				if current.Pos == 0 {
+					ans += 1
+				}
 			}
-			pos = new_pos
 		case "R":
-			full_turns := instr.Value / 100
-			ans += full_turns
-			clockwise := instr.Value % 100
-			new_pos := (pos + clockwise) % 100
-			if new_pos < pos {
-				ans += 1
+			for i := int64(0); i < instr.Value; i++ {
+				current = current.Next
+				if current.Pos == 0 {
+					ans += 1
+				}
 			}
-			pos = new_pos
 		}
-		println(pos)
 	}
 	fmt.Println("Part 2 Answer:", ans)
 
 }
 
 func main() {
-	instructions, err := readInputFile("test.txt")
+	args := os.Args[1:]
+	if len(args) < 1 {
+		fmt.Println("Please provide the input file path as an argument.")
+		return
+	}
+	instructions, err := readInputFile(args[0])
 	if err != nil {
 		fmt.Println("Error reading input file:", err)
 		return
